@@ -1,13 +1,13 @@
 import { User, Car } from "./schema";
 
-type CreateCarWithoutIdTagsImages = Omit<Car, "id" | "tags" | "images">;
+type CreateCarWithoutIdTagsImages = Omit<Car, "id" | "tags" | "images" | "user">;
 
 type CreateCarType = CreateCarWithoutIdTagsImages & {
-  tags: number[];
+  tags: string[];
   images: string[];
 };
 
-type UpdateCarType = Partial<CreateCarType>;
+type UpdateCarType = Partial<CreateCarType> & {id: number};
 
 interface DeleteCarType {
   id: number;
@@ -23,4 +23,3 @@ export type {
   SignupType,
   SigninType,
 };
-

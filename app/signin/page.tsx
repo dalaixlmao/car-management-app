@@ -35,13 +35,12 @@ export default function SignInPage() {
         />
         <button
           onClick={async () => {
-            console.log(email, password);
-            await signIn("credentials", {
+            const chk = await signIn("credentials", {
               email: email,
               password: password,
               redirect: false,
             });
-            router.push("/");
+            if (chk?.ok) router.push("/");
           }}
           className="mt-3 py-1 w-full bg-black rounded-md hover:border hover:border-blue-500 mb-6"
         >

@@ -3,8 +3,8 @@ import z from "zod";
 const createCarSchema = z.object({
   title: z.string(),
   description: z.string(),
-  images: z.array(z.string()),
-  tags: z.array(z.number()),
+  images: z.array(z.string()).max(10),
+  tags: z.array(z.string()),
 });
 
 const updateCarSchema = createCarSchema.partial();
