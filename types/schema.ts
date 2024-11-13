@@ -1,5 +1,3 @@
-import { Prisma } from "@prisma/client";
-
 interface User {
   id: number;
   name: string;
