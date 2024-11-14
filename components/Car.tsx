@@ -46,7 +46,7 @@ export default function Car({
             <div className="ml-5 md:max-w-[300px] sm:max-w-[300px] max-w-[200px]">
               <div className="flex flex-row flex-wrap gap-2">
                 {tags.map((t, index) => {
-                  return <Tag key={index} content={t.name} />;
+                  return <Tag key={index} content={t.name} size={"sm"} />;
                 })}
               </div>
               <div className="text-wrap text-white/50 mt-2 ">{description}</div>
