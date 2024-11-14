@@ -16,4 +16,6 @@ interface GetCarType{
     }[];
 };
 
+
+
 export type {GetCarType}
