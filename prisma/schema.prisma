@@ -27,7 +27,7 @@ model Car{
   description String
   userId Int
   images Image[]
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags Tag[]
 }
 
@@ -35,7 +35,7 @@ model Image{
   id Int @id @default(autoincrement())
   url String @unique
   carId Int
-  car Car @relation(fields: [carId], references: [id])
+  car Car @relation(fields: [carId], references: [id], onDelete: Cascade)
 }
 
 model Tag{
