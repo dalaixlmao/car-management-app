@@ -16,7 +16,6 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -33,12 +32,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <Providers>
-        <body
-          className={`${poppins.variable} antialiased bg-black text-white`}
-        >
+        <body className={`${poppins.variable} antialiased bg-black text-white`}>
           {children}
         </body>
       </Providers>

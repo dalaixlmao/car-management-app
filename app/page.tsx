@@ -1,13 +1,9 @@
-import NavBar from "@/components/Navbar";
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="mt-[80px]">
-      <div className="absolute top-0">
-        <NavBar />
-      </div>
-      Hello
-    </div>
-  );
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  if (session?.user) {
+    redirect("/client");
+  } else redirect("/signin");
 }
