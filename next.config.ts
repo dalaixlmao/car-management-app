@@ -8,11 +8,6 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.NODE_ENV === 'production',
   },
   distDir: '.next',
-  exportPathMap: async function () {
-    return {
-      '/': { page: '/' },
-    };
-  },
 };
 
 export default nextConfig;
