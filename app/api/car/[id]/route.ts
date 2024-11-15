@@ -4,9 +4,9 @@ import { GetCarType } from "@/types/response";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const carId = parseInt(context.params.id, 10);
+  const carId = parseInt(params.id, 10);
 
   if (isNaN(carId)) {
     return NextResponse.json(
