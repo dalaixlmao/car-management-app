@@ -5,18 +5,17 @@ import SearchInput from "./SearchInput";
 import Button from "./Button";
 import Menu from "@/public/icons/menu";
 import Cross from "@/public/icons/cross";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { getUserDetailsById } from "@/services/userServices";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSearchContext } from "./SearchContext";
 
 export default function NavBar({ userId }: { userId: number }) {
   const [open, setOpen] = useState(false);
   const [displayLogout, setDisplayLogOut] = useState(false);
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-  }>();
+  const [user, setUser] = useState<{ name: string; email: string }>();
+  const { searchText, setSearchText } = useSearchContext(); // access context
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +36,7 @@ export default function NavBar({ userId }: { userId: number }) {
       console.error("Logout failed:", error);
     }
   };
+
   return (
     <div className="w-screen border-b border-white/20">
       <div className="w-full flex flex-row justify-between items-center px-5 py-4">
@@ -57,7 +57,7 @@ export default function NavBar({ userId }: { userId: number }) {
         <div className="hidden md:flex w-3/5 items-center justify-between">
           {/* Search Section */}
           <div className="flex flex-row items-center">
-            <SearchInput />
+            <SearchInput setSearchText={setSearchText} searchText={searchText} />
             <div className="ml-2">
               <Button type="search-button" handler={() => {}} />
             </div>
@@ -97,11 +97,9 @@ export default function NavBar({ userId }: { userId: number }) {
       >
         {/* Search Section */}
         <div className="flex flex-row">
-          <SearchInput />
+          <SearchInput setSearchText={setSearchText} searchText={searchText} />
           <div className="ml-2">
-            <Button type="search-button" handler={() => {}}>
-              Search
-            </Button>
+            <Button type="search-button" handler={() => {}} />
           </div>
         </div>
 
@@ -111,11 +109,11 @@ export default function NavBar({ userId }: { userId: number }) {
             <div className="text-4xl border-b border-white/10 flex flex-row justify-between w-full py-2 px-2">
               {user?.name}
               <div
-              onClick={handleLogout}
-              className="text-white/50 text-base font-regular px-2 mt-2 rounded-md transition-all cursor-pointer hover:bg-white/10 hover:text-white py-1"
-            >
-              Log Out
-            </div>
+                onClick={handleLogout}
+                className="text-white/50 text-base font-regular px-2 mt-2 rounded-md transition-all cursor-pointer hover:bg-white/10 hover:text-white py-1"
+              >
+                Log Out
+              </div>
             </div>
           </div>
         </div>

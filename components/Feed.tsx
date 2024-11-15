@@ -11,6 +11,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import axios from "axios";
 import { GetCarType } from "@/types/response";
 import ChangingCarState from "./ChangingeCarState";
+import { useSearchContext } from "./SearchContext";
 
 export default function Feed({ userId }: { userId: number }) {
   const url = process.env.NEXTAUTH_URL || "";
@@ -24,6 +25,8 @@ export default function Feed({ userId }: { userId: number }) {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [cars, setCars] = useState<GetCarType[]>([]);
+
+  const { searchText } = useSearchContext(); // Get the search text from context
 
   const fetchUserDetails = useCallback(async () => {
     try {
@@ -102,6 +105,20 @@ export default function Feed({ userId }: { userId: number }) {
     }
   };
 
+  // Filter cars based on the searchText
+  const filteredCars = cars.filter((car) => {
+    const carTitle = car.title.toLowerCase();
+    const carDescription = car.description.toLowerCase();
+    const carTags = car.tags.map((tag) => {return tag.name.toLowerCase()});
+    const lowerSearchText = searchText.toLowerCase();
+
+    return (
+      carTitle.includes(lowerSearchText) ||
+      carDescription.includes(lowerSearchText) ||
+      carTags.some((tag) => tag.includes(lowerSearchText))
+    );
+  });
+
   return (
     <div className="lg:w-2/5 md:w-3/5 w-[90%] h-screen md:border-r md:border-l md:border-white/10">
       <button
@@ -124,7 +141,7 @@ export default function Feed({ userId }: { userId: number }) {
         />
       )}
       <div className="w-full px-4">
-        {cars.map((c, index) => {
+        {filteredCars.map((c, index) => {
           return (
             <Car
               key={index}

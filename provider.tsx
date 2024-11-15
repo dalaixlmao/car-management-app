@@ -2,10 +2,13 @@
 
 import { SessionProvider } from "next-auth/react";
 import { EdgeStoreProvider } from "./lib/edgestore";
+import { SearchProvider } from "./components/SearchContext";
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionProvider>
-      <EdgeStoreProvider>{children}</EdgeStoreProvider>
+      <SearchProvider>
+        <EdgeStoreProvider>{children}</EdgeStoreProvider>
+      </SearchProvider>
     </SessionProvider>
   );
 };
