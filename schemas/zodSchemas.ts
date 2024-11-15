@@ -7,7 +7,13 @@ const createCarSchema = z.object({
   tags: z.array(z.string()),
 });
 
-const updateCarSchema = createCarSchema.partial();
+const updateCarSchema = z.object({
+  id: z.number().int().positive(), // Ensure 'id' is required and a positive integer
+  tags: z.array(z.string()).optional(), // Optional array of strings
+  images: z.array(z.string().url()).optional(), // Optional array of URLs
+  title: z.string().optional(), // Optional string
+  description: z.string().optional(), // Optional string
+});
 
 const deleteCarSchema = z.object({
   id: z.number(),

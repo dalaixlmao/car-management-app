@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 
 interface InputProps {
   label: string;
   type: string;
   placeholder: string;
   setFunction: (a: string) => void;
+  value?: string;
 }
 
 export function FormInput({
@@ -12,11 +14,13 @@ export function FormInput({
   type,
   placeholder,
   setFunction,
+  value,
 }: InputProps) {
   return (
     <div className="flex w-full flex-col items-start mt-5 text-sm">
       <div className="text-white/50">{label}</div>
       <input
+        value={value ? value : ""}
         onChange={(e) => {
           setFunction(e.target.value);
         }}
@@ -28,8 +32,14 @@ export function FormInput({
   );
 }
 
-export function TagsInput({setFunction}:{setFunction: (a:string[])=>void}) {
-  const [tags, setTags] = useState<string[]>([]);
+export function TagsInput({
+  setFunction,
+  existingTags,
+}: {
+  setFunction: (a: string[]) => void;
+  existingTags?: string[];
+}) {
+  const [tags, setTags] = useState<string[]>(existingTags ? existingTags : []);
   const [value, setValue] = useState<string>("");
 
   const addTag = () => {
@@ -41,16 +51,26 @@ export function TagsInput({setFunction}:{setFunction: (a:string[])=>void}) {
     }
   };
 
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags((existingTags || []).filter((tag) => tag !== tagToRemove));
+  };
+
   return (
     <div className="flex mt-5 flex-col items-start w-full">
       <div className="text-white/30">Add Tags</div>
-      <div className="flex flex-wrap">
-        {Array.from(new Set(tags)).map((tag) => (
+      <div className="flex flex-wrap gap-2 mb-2 mt-2">
+        {(tags || []).map((tag, index) => (
           <div
-            key={tag}
-            className="mx-2 my-1 rounded-full bg-white/10 px-2 py-1 text-xs text-white/30"
+            key={index}
+            className="flex items-center bg-white/10 rounded-full px-3 py-1"
           >
-            {tag}
+            <span className="mr-2">{tag}</span>
+            <button
+              onClick={() => handleRemoveTag(tag)}
+              className="hover:bg-white/20 rounded-full p-1 transition-colors"
+            >
+              <X size={14} />
+            </button>
           </div>
         ))}
       </div>

@@ -11,7 +11,7 @@ interface PageProps {
 export default async function Home({ params }: PageProps) {
   const server = await getServerSession(authOptions);
 
-  const { id } = params;
+  const { id } = await params;
   if (server?.user)
     return (
       <div className="mt-[80px] flex flex-col items-center h-screen">

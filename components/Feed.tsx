@@ -2,18 +2,15 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Car from "./Car";
-import { CreateCarType, SignupType } from "@/types/requests";
+import { SignupType } from "@/types/requests";
 import { getUserDetailsById } from "@/services/userServices";
 import {
-  MultiImageDropzone,
   type FileState,
 } from "@/components/MultiImageDropZone";
 import { useEdgeStore } from "@/lib/edgestore";
-import Cross from "@/public/icons/cross";
-import { FormInput, TagsInput } from "./ui/inputs";
-import Image from "next/image";
 import axios from "axios";
 import { GetCarType } from "@/types/response";
+import ChangingCarState from "./ChangingeCarState";
 
 export default function Feed({ userId }: { userId: number }) {
   const url = process.env.NEXTAUTH_URL || "";
@@ -113,82 +110,32 @@ export default function Feed({ userId }: { userId: number }) {
       >
         Add your car
       </button>
-
       {createCar && (
-        <div className="z-10 absolute flex flex-col items-center justify-center w-screen h-screen bg-black/70 backdrop-blur-md top-0 left-0">
-          <div
-            className="w-6 h-6 cursor-pointer mb-3"
-            onClick={() => setCreateCar(false)}
-          >
-            <Cross />
-          </div>
-
-          <div className="flex md:w-3/5 w-4/5 bg-white/10 rounded-xl pb-10 flex-col items-center">
-            <div className="text-4xl font-bold pt-5">Create Car</div>
-            <div className="w-full px-10 flex flex-col items-center">
-              <FormInput
-                label="Car Title"
-                placeholder="Enter car title..."
-                type="text"
-                setFunction={setTitle}
-              />
-              <FormInput
-                label="Car Description"
-                placeholder="Enter the description of the car..."
-                type="textArea"
-                setFunction={setDescription}
-              />
-              <TagsInput setFunction={setTags} />
-
-              <div className="mt-5 w-[200px]">
-                <div className="flex flex-row flex-wrap">
-                  {images.map((image) => (
-                    <Image
-                      key={image}
-                      className="border border-white/30 p-2 mr-2 mb-2 rounded-lg"
-                      src={image}
-                      alt="Car image"
-                      width={50}
-                      height={50}
-                    />
-                  ))}
-                </div>
-                <MultiImageDropzone
-                  setFunction={setImages}
-                  value={fileStates}
-                  dropzoneOptions={{ maxFiles: 10 }}
-                  onChange={setFileStates}
-                  onFilesAdded={handleFileUpload}
-                />
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className={`w-full mt-5 py-1 border rounded-md ${
-                  loading
-                    ? "bg-gray-500 text-white"
-                    : "border-white/60 hover:bg-white hover:border-white hover:text-black transition-all text-white/60"
-                }`}
-              >
-                {loading ? "Submitting..." : "Submit"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ChangingCarState
+          setCreateCar={setCreateCar}
+          setTitle={setTitle}
+          setDescription={setDescription}
+          setTags={setTags}
+          setImages={setImages}
+          images={images}
+          loading={loading}
+          handleFileUpload={handleFileUpload}
+          handleSubmit={handleSubmit}
+        />
       )}
-
       <div className="w-full px-4">
-        {cars.map((c, index)=>{
-          return <Car 
-          key={index}
-          id={c.id}
-          description={c.description}
-          title={c.title}
-          user={c.user}
-          tags={c.tags}
-          images={c.images}
-          />
+        {cars.map((c, index) => {
+          return (
+            <Car
+              key={index}
+              id={c.id}
+              description={c.description}
+              title={c.title}
+              user={c.user}
+              tags={c.tags}
+              images={c.images}
+            />
+          );
         })}
       </div>
     </div>

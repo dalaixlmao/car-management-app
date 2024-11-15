@@ -14,55 +14,73 @@ async function deleteCarById({ id }: DeleteCarType) {
 async function updateCar(body: UpdateCarType) {
   const { id, tags, images, ...carData } = body;
 
+  // Check if the car exists
   const existingCar = await prisma.car.findUnique({
     where: { id },
     include: { tags: true, images: true },
   });
 
   if (!existingCar) {
-    throw new Error(`Car with id ${id} not found.`);
+    throw new Error(`Car with ID ${id} not found.`);
   }
 
+  // Prepare updates for tags
+  const tagUpdates = tags
+    ? {
+        connect: tags
+          .filter((tag) => existingCar.tags.some((t) => t.name === tag))
+          .map((tag) => ({ name: tag })),
+        create: tags
+          .filter((tag) => !existingCar.tags.some((t) => t.name === tag))
+          .map((tag) => ({ name: tag })),
+        disconnect: existingCar.tags
+          .filter((tag) => !tags.includes(tag.name))
+          .map((tag) => ({ id: tag.id })),
+      }
+    : undefined;
+
+  // Prepare updates for images
+  const imageUpdates = images
+    ? {
+        create: images
+          .filter(
+            (url) => !existingCar.images.some((image) => image.url === url)
+          )
+          .map((url) => ({ url })),
+        deleteMany: {
+          id: {
+            in: existingCar.images
+              .filter((image) => !images.includes(image.url))
+              .map((image) => image.id),
+          },
+        },
+      }
+    : undefined;
+
+  // Ensure no undefined values are passed to Prisma
+  const data: Record<string, any> = {
+    ...carData,
+  };
+
+  if (tagUpdates) {
+    data.tags = tagUpdates;
+  }
+  if (imageUpdates) {
+    data.images = imageUpdates;
+  }
+
+  // Update the car
   const updatedCar = await prisma.car.update({
     where: { id },
-    data: {
-      ...carData,
-      tags: tags
-        ? {
-            connect: tags
-              .filter((tag) => existingCar.tags.some((t) => t.name === tag))
-              .map((tag) => ({ name: tag })),
-            create: tags
-              .filter((tag) => !existingCar.tags.some((t) => t.name === tag))
-              .map((tag) => ({ name: tag })),
-            disconnect: existingCar.tags
-              .filter((tag) => !tags.includes(tag.name))
-              .map((tag) => ({ id: tag.id })),
-          }
-        : undefined,
-
-      images: images
-        ? {
-            create: images
-              .filter(
-                (url) => !existingCar.images.some((image) => image.url === url)
-              )
-              .map((url) => ({ url })),
-            deleteMany: {
-              id: {
-                in: existingCar.images
-                  .filter((image) => !images.includes(image.url))
-                  .map((image) => image.id),
-              },
-            },
-          }
-        : undefined,
-    },
+    data,
     include: { tags: true, images: true },
   });
 
   return updatedCar;
 }
+
+
+
 
 async function createCar({
   title,
