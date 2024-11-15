@@ -2,7 +2,6 @@ import { getAllCars } from "@/services/carServices";
 import { GetCarType } from "@/types/response";
 import { NextResponse } from "next/server";
 
-// Named export for the GET method
 export async function GET() {
   try {
     console.log("Entered API fetching process");

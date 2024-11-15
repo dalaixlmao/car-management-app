@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import findUserById from "@/services/findUserById";
@@ -26,25 +26,23 @@ async function validateSession() {
   return userId;
 }
 
-// DELETE handler
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest) {
   try {
-    const id = params.id
-    console.log("carId=",id)
-    if (!id) {
+    const url = new URL(request.url);
+    const carId = url.pathname.split('/').pop();
+
+    if (!carId) {
       return NextResponse.json(
         { message: "Car ID is required" },
         { status: 400 }
       );
     }
 
-    console.log(`Deleting car with ID: ${id}`);
+    console.log(`Deleting car with ID: ${carId}`);
 
     const userId = await validateSession();
     if (typeof userId !== "number") return userId;
-
-    // Perform the delete operation
-    await deleteCarById({ id: Number(id) });
+    await deleteCarById({ id: Number(carId) });
 
     return NextResponse.json(
       { message: "Car deleted successfully" },

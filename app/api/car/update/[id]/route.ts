@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateCar } from "@/services/carServices";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest) {
   try {
-    const id = params.id;
-    const body = await req.json();
+    const url = new URL(request.url);
+    const carId = url.pathname.split('/').pop();
+    
+    if (!carId) {
+      return NextResponse.json(
+        { success: false, message: "Car ID is required" },
+        { status: 400 }
+      );
+    }
 
-    // Your logic to handle the PUT request goes here.
-    const updatedCar = await updateCar({ ...body, id: Number(id) });
+    const body = await request.json();
+    const updatedCar = await updateCar({ ...body, id: Number(carId) });
     return NextResponse.json({ success: true, data: updatedCar });
   } catch (error) {
     if (error instanceof Error) {
