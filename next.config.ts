@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-
+//triggering redeployement
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   images: {
