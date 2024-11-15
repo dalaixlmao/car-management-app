@@ -1,6 +1,19 @@
+import { Session, User } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import signup from "@/services/signup";
 import signin from "@/services/signin";
+
+
+interface CustomUser extends User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+interface CustomSession extends Session {
+  user: CustomUser;
+}
 
 export const authOptions = {
   providers: [
@@ -23,10 +36,23 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_URL || "",
-  callbacks: {
-    async session({ token, session }: any) {
-      session.user.id = token.sub;
-      return session;
+callbacks: {
+    async session({ 
+      session, 
+      token,  
+    }: {
+      session: Session;
+      token: JWT;
+    }): Promise<CustomSession> {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.sub || '',
+          email: session.user?.email || '',
+          name: session.user?.name || undefined,
+        },
+      };
     },
   },
   pages: {

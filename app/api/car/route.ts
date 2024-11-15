@@ -1,18 +1,9 @@
 import { getAllCars } from "@/services/carServices";
 import { GetCarType } from "@/types/response";
-import { NextRequest, NextResponse } from "next/server";
-
-interface ResponseErrorMessage {
-  message: string;
-}
-
-interface GetAllCarResponse {
-  message: string;
-  cars: GetCarType[];
-}
+import { NextResponse } from "next/server";
 
 // Named export for the GET method
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     console.log("Entered API fetching process");
     const cars: GetCarType[] = await getAllCars();

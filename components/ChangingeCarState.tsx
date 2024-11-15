@@ -41,10 +41,6 @@ export default function ChangingCarState({
     setImages(images.filter((img) => img !== imageUrl));
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags((tags || []).filter((tag) => tag !== tagToRemove));
-  };
-
   return (
     <div className="z-10 absolute flex flex-col items-center justify-center w-screen h-screen bg-black/70 backdrop-blur-md top-0 left-0">
       <div

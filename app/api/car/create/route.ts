@@ -16,7 +16,9 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    console.log("Process 1 cleared, User session cleared, user session going on.");
+    console.log(
+      "Process 1 cleared, User session cleared, user session going on."
+    );
 
     // Step 2: Get user details
     const userId = Number(session.user.id);
@@ -44,8 +46,11 @@ export async function POST(req: Request) {
       { message: "New car created successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("Error in POST handler:", error.message);
-    return NextResponse.json({ message: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
   }
 }

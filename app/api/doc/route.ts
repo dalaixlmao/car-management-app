@@ -322,6 +322,6 @@ const apiSpec = createSwaggerSpec({
   apiFolder: 'app/api',
 });
 
-export async function GET(req: Request) {
+export async function GET() {
   return NextResponse.json(apiSpec);
 }

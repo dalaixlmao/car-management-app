@@ -2,7 +2,7 @@
 
 import { GetCarType } from "@/types/response";
 import axios from "axios";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Tag from "./Tags";
 import Image from "next/image";
 import ChangingCarState from "./ChangingeCarState";
@@ -25,7 +25,8 @@ export default function CarDescription({
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { edgestore } = useEdgeStore();
-  const [check1, setCheck1] = useState(false);  
+  const [check1, setCheck1] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
     const fetchCarDetails = async () => {
@@ -42,11 +43,11 @@ export default function CarDescription({
         } else {
           setImages([]); // Fallback if images is not an array
         }
-
+        if (carData.user.id == userId) setCanEdit(true);
         setTags(carData.tags.map((tag: { name: string }) => tag.name));
         setTitle(carData.title);
         setDescription(carData.description);
-        setCheck1(false);  // Mark the car details as loaded
+        setCheck1(false); // Mark the car details as loaded
       } catch (error) {
         console.error("Error fetching car details:", error);
       } finally {
@@ -55,7 +56,7 @@ export default function CarDescription({
     };
 
     fetchCarDetails();
-  }, [baseURL, id, setCheck1]);
+  }, [baseURL, id, setCheck1, userId]);
 
   const handleUpdate = async () => {
     if (!title.trim() || !description.trim()) {
@@ -75,9 +76,12 @@ export default function CarDescription({
       setCar(data.car); // Refresh updated data
       setEditMode(false); // Exit edit mode
       window.location.reload();
-    } catch (error: any) {
-      alert(error?.response?.data?.message || "Failed to update the car.");
-      console.error("Error updating car:", error);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+      } else {
+        console.error("Error updating car:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -124,29 +128,29 @@ export default function CarDescription({
             className="z-20 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
             role="status"
           >
-            <span
-              className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-            >
+            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
               Loading...
             </span>
           </div>
         </div>
       )}
 
-      <div>
-        <button
-          onClick={() => setEditMode(true)}
-          className="py-1 px-3 bg-indigo-500 text-black rounded-full font-semibold mt-2 hover:bg-indigo-400 transition-all"
-        >
-          Edit
-        </button>
-        <button
-          onClick={handleDelete}
-          className="py-1 px-3 bg-red-500 ml-3 rounded-full text-black font-semibold hover:bg-red-400 transition-all"
-        >
-          Delete
-        </button>
-      </div>
+      {canEdit && (
+        <div>
+          <button
+            onClick={() => setEditMode(true)}
+            className="py-1 px-3 bg-indigo-500 text-black rounded-full font-semibold mt-2 hover:bg-indigo-400 transition-all"
+          >
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className="py-1 px-3 bg-red-500 ml-3 rounded-full text-black font-semibold hover:bg-red-400 transition-all"
+          >
+            Delete
+          </button>
+        </div>
+      )}
 
       {editMode && (
         <ChangingCarState

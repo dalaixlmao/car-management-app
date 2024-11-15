@@ -1,4 +1,3 @@
-import { CreateCarType } from "@/types/requests";
 import Image from "next/image";
 import Tag from "./Tags";
 import Left from "@/public/icons/left";

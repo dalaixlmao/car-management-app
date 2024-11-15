@@ -9,10 +9,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // Your logic to handle the PUT request goes here.
     const updatedCar = await updateCar({ ...body, id: Number(id) });
     return NextResponse.json({ success: true, data: updatedCar });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
-      { status: 500 }
-    );
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      return NextResponse.json(
+        { success: false, message: error.message || "Internal Server Error" },
+        { status: 500 }
+      );
+    } else {
+      console.error("Unexpected error:", error);
+      return NextResponse.json(
+        { success: false, message: error || "Internal Server Error" },
+        { status: 500 }
+      );
+    }
   }
 }

@@ -7,7 +7,7 @@ export default async function Home() {
   if (session?.user)
     return (
       <div className="mt-[80px] flex flex-col items-center">
-        <Feed userId = {Number(session.user.id)}/>
+        <Feed />
       </div>
     );
 }

@@ -1,24 +1,36 @@
 import CarDescription from "@/components/CarDescription";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation"; 
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
 
-export default async function Home({ params }: PageProps) {
-  const server = await getServerSession(authOptions);
+export default async function CarPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const session = await getServerSession(authOptions); 
+
+  if (!session?.user) {
+   
+    redirect("/signin");
+  }
 
   const { id } = await params;
-  if (server?.user)
+  if (!id || isNaN(Number(id))) {
     return (
       <div className="mt-[80px] flex flex-col items-center h-screen">
-        <CarDescription
-          id={Number(id)}
-          userId = {Number(server.user.id)}
-        />
+        <p>Invalid car ID</p>
       </div>
     );
+  }
+
+  return (
+    <div className="mt-[80px] flex flex-col items-center h-screen">
+      <CarDescription
+        id={Number(id)}
+        userId={Number(session.user.id)}
+      />
+    </div>
+  );
 }

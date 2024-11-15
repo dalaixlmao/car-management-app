@@ -4,7 +4,7 @@ import React from "react";
 
 function SearchButton({ onClick }: { onClick: () => void }) {
   return (
-      <button className="text-white/60 transition-all text-sm placeholder:text-sm px-4 py-1 bg-white/10 bg-gradient-to-b from-white/10 to-white/0 border border-white/30 rounded-md">Go</button>
+      <button onClick={onClick} className="text-white/60 transition-all text-sm placeholder:text-sm px-4 py-1 bg-white/10 bg-gradient-to-b from-white/10 to-white/0 border border-white/30 rounded-md">Go</button>
   );
 }
 
@@ -35,7 +35,7 @@ function HyperButton({
 }) {
   return (
     <button
-      onClick={() => {}}
+      onClick={onClick}
       className={className + " py-2 px-4 hover:bg-indigo-400 transition-all bg-indigo-500 rounded-full"}
     >
       {children}
