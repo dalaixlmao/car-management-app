@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCarById } from "@/services/carServices";
 import { GetCarType } from "@/types/response";
 
-type Props = {
-  params: { id: string }
-}
-
 export async function GET(
-  req: NextRequest,
-  context: Props
-): Promise<NextResponse> {
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const carId = parseInt(context.params.id, 10);
 
   if (isNaN(carId)) {
