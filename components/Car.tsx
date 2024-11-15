@@ -7,7 +7,6 @@ import { useState } from "react";
 import { GetCarType } from "@/types/response";
 import { useRouter } from "next/navigation";
 
-
 export default function Car({
   images,
   tags,
@@ -19,10 +18,13 @@ export default function Car({
   const [imageInd, setImageInd] = useState(0);
   const router = useRouter();
   return (
-    <div 
-    onClick={()=>{router.push(`/car/${id}`)}}
-    className="cursor-pointer hover:bg-white/10 transition-all duration-400 mt-4 relative w-full flex flex-col border-2 border-white/30 rounded-lg">
-      <div className="flex flex-row items-end px-5 py-3">
+    <div className="cursor-pointer hover:bg-white/10 transition-all duration-400 mt-4 relative w-full flex flex-col border-2 border-white/30 rounded-lg">
+      <div
+        onClick={() => {
+          router.push(`/car/${id}`);
+        }}
+        className="flex flex-row items-end px-5 py-3"
+      >
         <div className="text-4xl">{title}</div>
         <div className="text-3xl text-white/30 ml-3">{user.name}</div>
       </div>
