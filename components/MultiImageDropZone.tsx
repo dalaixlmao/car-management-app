@@ -6,15 +6,13 @@ import { UploadCloudIcon, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { useDropzone, type DropzoneOptions } from "react-dropzone";
-import { twMerge } from "tailwind-merge";
+import { clsx } from "clsx";
 
 const variants = {
   base: "relative rounded-md aspect-square flex justify-center items-center flex-col cursor-pointer min-h-[150px] min-w-[200px] border border-dashed border-gray-400 dark:border-gray-300 transition-colors duration-200 ease-in-out",
-  image:
-    "border-0 p-0 w-full h-full relative shadow-md bg-slate-200 dark:bg-slate-900 rounded-md",
+  image: "border-0 p-0 w-full h-full relative shadow-md bg-slate-200 dark:bg-slate-900 rounded-md",
   active: "border-2",
-  disabled:
-    "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
+  disabled: "bg-gray-200 border-gray-300 cursor-default pointer-events-none bg-opacity-30 dark:bg-gray-700",
   accept: "border border-blue-500 bg-blue-500 bg-opacity-10",
   reject: "border border-red-700 bg-red-700 bg-opacity-10",
 };
@@ -35,49 +33,19 @@ type InputProps = {
 };
 
 const ERROR_MESSAGES = {
-  fileTooLarge(maxSize: number) {
-    return `The file is too large. Max size is ${formatFileSize(maxSize)}.`;
-  },
-  fileInvalidType() {
-    return "Invalid file type.";
-  },
-  tooManyFiles(maxFiles: number) {
-    return `You can only add ${maxFiles} file(s).`;
-  },
-  fileNotSupported() {
-    return "The file is not supported.";
-  },
+  fileTooLarge: (maxSize: number) => `The file is too large. Max size is ${formatFileSize(maxSize)}.`,
+  fileInvalidType: "Invalid file type.",
+  tooManyFiles: (maxFiles: number) => `You can only add ${maxFiles} file(s).`,
+  fileNotSupported: "The file is not supported.",
 };
 
-const MultiImageDropzone = React.forwardRef<
-  HTMLInputElement,
-  InputProps & { setFunction: (a: string[]) => void }
->(
-  (
-    {
-      dropzoneOptions,
-      value,
-      className,
-      disabled,
-      onChange,
-      onFilesAdded,
-      setFunction,
-    },
-    ref
-  ) => {
+const MultiImageDropzone = React.forwardRef<HTMLInputElement, InputProps & { setFunction: (a: string[]) => void }>(
+  ({ dropzoneOptions, value, className, disabled, onChange, onFilesAdded, setFunction }, ref) => {
     const [customError, setCustomError] = React.useState<string>();
 
     const imageUrls = React.useMemo(() => {
       if (value) {
-        return value.map((fileState) => {
-          if (typeof fileState.file === "string") {
-            // in case an url is passed in, use it to display the image
-            return fileState.file;
-          } else {
-            // in case a file is passed in, create a base64 url to display the image
-            return URL.createObjectURL(fileState.file);
-          }
-        });
+        return value.map((fileState) => (typeof fileState.file === "string" ? fileState.file : URL.createObjectURL(fileState.file)));
       }
       return [];
     }, [value]);
@@ -96,26 +64,25 @@ const MultiImageDropzone = React.forwardRef<
       onDrop: (acceptedFiles) => {
         const files = acceptedFiles;
         setCustomError(undefined);
-        if (
-          dropzoneOptions?.maxFiles &&
-          (value?.length ?? 0) + files.length > dropzoneOptions.maxFiles
-        ) {
+
+        if (dropzoneOptions?.maxFiles && (value?.length ?? 0) + files.length > dropzoneOptions.maxFiles) {
           setCustomError(ERROR_MESSAGES.tooManyFiles(dropzoneOptions.maxFiles));
           return;
         }
-        if (files) {
+
+        if (files.length > 0) {
           const addedFiles = files.map<FileState>((file) => ({
             file,
             key: Math.random().toString(36).slice(2),
             progress: "PENDING",
           }));
-          void onFilesAdded?.(addedFiles);
-          void onChange?.([...(value ?? []), ...addedFiles]);
+
+          onFilesAdded?.(addedFiles);
+          onChange?.([...(value ?? []), ...addedFiles]);
+
           if (setFunction) {
             const fileUrls = addedFiles.map((addedFile) =>
-              typeof addedFile.file === "string"
-                ? addedFile.file
-                : URL.createObjectURL(addedFile.file)
+              typeof addedFile.file === "string" ? addedFile.file : URL.createObjectURL(addedFile.file)
             );
             setFunction(removeUnnecessaryImages(fileUrls));
           }
@@ -124,60 +91,47 @@ const MultiImageDropzone = React.forwardRef<
       ...dropzoneOptions,
     });
 
-    // styling
     const dropZoneClassName = React.useMemo(
       () =>
-        twMerge(
+        clsx(
           variants.base,
           isFocused && variants.active,
           disabled && variants.disabled,
           (isDragReject ?? fileRejections[0]) && variants.reject,
           isDragAccept && variants.accept,
           className
-        ).trim(),
-      [
-        isFocused,
-        fileRejections,
-        isDragAccept,
-        isDragReject,
-        disabled,
-        className,
-      ]
+        ),
+      [isFocused, fileRejections, isDragAccept, isDragReject, disabled, className]
     );
 
-    // error validation messages
     const errorMessage = React.useMemo(() => {
       if (fileRejections[0]) {
         const { errors } = fileRejections[0];
-        if (errors[0]?.code === "file-too-large") {
-          return ERROR_MESSAGES.fileTooLarge(dropzoneOptions?.maxSize ?? 0);
-        } else if (errors[0]?.code === "file-invalid-type") {
-          return ERROR_MESSAGES.fileInvalidType();
-        } else if (errors[0]?.code === "too-many-files") {
-          return ERROR_MESSAGES.tooManyFiles(dropzoneOptions?.maxFiles ?? 0);
-        } else {
-          return ERROR_MESSAGES.fileNotSupported();
+        const errorCode = errors[0]?.code;
+
+        switch (errorCode) {
+          case "file-too-large":
+            return ERROR_MESSAGES.fileTooLarge(dropzoneOptions?.maxSize ?? 0);
+          case "file-invalid-type":
+            return ERROR_MESSAGES.fileInvalidType;
+          case "too-many-files":
+            return ERROR_MESSAGES.tooManyFiles(dropzoneOptions?.maxFiles ?? 0);
+          default:
+            return ERROR_MESSAGES.fileNotSupported;
         }
       }
-      return undefined;
-    }, [fileRejections, dropzoneOptions]);
+      return customError;
+    }, [fileRejections, dropzoneOptions, customError]);
 
     return (
       <div className="w-full h-full">
-        <div className="">
+        <div>
           {(!value || value.length < (dropzoneOptions?.maxFiles ?? 0)) && (
-            <div
-              {...getRootProps({
-                className: dropZoneClassName,
-              })}
-            >
-              {/* Main File Input */}
+            <div {...getRootProps({ className: dropZoneClassName })}>
               <input ref={ref} {...getInputProps()} />
               <div className="flex flex-col items-center justify-center text-xs text-gray-400">
                 <UploadCloudIcon className="mb-2 h-7 w-7" />
-                <div className="text-gray-400 px-3">
-                  drag & drop to upload at max 10 images
-                </div>
+                <div className="text-gray-400 px-3">drag & drop to upload up to 10 images</div>
                 <div className="mt-3">
                   <Button type="button" disabled={disabled}>
                     select
@@ -188,35 +142,29 @@ const MultiImageDropzone = React.forwardRef<
           )}
         </div>
         {/* Error Text */}
-        <div className="mt-1 text-xs text-red-500">
-          {customError ?? errorMessage}
-        </div>
+        {errorMessage && <div className="mt-1 text-xs text-red-500">{errorMessage}</div>}
       </div>
     );
   }
 );
+
 MultiImageDropzone.displayName = "MultiImageDropzone";
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => {
-  return (
+const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  ({ className, ...props }, ref) => (
     <button
-      className={twMerge(
-        // base
+      className={clsx(
         "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50",
-        // color
         "border border-gray-400 text-gray-400 shadow hover:bg-gray-100 hover:text-gray-500 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700",
-        // size
         "h-6 rounded-md px-2 text-xs",
         className
       )}
       ref={ref}
       {...props}
     />
-  );
-});
+  )
+);
+
 Button.displayName = "Button";
 
 export { MultiImageDropzone };
@@ -228,24 +176,8 @@ function CircleProgress({ progress }: { progress: number }) {
 
   return (
     <div className="relative h-16 w-16">
-      <svg
-        className="absolute top-0 left-0 -rotate-90 transform"
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${(radius + strokeWidth) * 2} ${
-          (radius + strokeWidth) * 2
-        }`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          className="text-gray-400"
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="none"
-          cx={radius + strokeWidth}
-          cy={radius + strokeWidth}
-          r={radius}
-        />
+      <svg className="absolute top-0 left-0 -rotate-90 transform" width="100%" height="100%" viewBox={`0 0 ${(radius + strokeWidth) * 2} ${(radius + strokeWidth) * 2}`} xmlns="http://www.w3.org/2000/svg">
+        <circle className="text-gray-400" stroke="currentColor" strokeWidth={strokeWidth} fill="none" cx={radius + strokeWidth} cy={radius + strokeWidth} r={radius} />
         <circle
           className="text-white transition-all duration-300 ease-in-out"
           stroke="currentColor"

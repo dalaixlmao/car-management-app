@@ -21,38 +21,41 @@ export default function CarDescription({
   const [editMode, setEditMode] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState<string[]>([]); 
+  const [images, setImages] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { edgestore } = useEdgeStore();
-
-  const fetchCarDetails = useCallback(async () => {
-    try {
-      const { data } = await axios.get(`${baseURL}/api/car/${id}`);
-      const { car: carData } = data;
-      console.log("Fetched car data:", carData);
-  
-      // Ensure carData.images is an array before calling setImages
-      if (Array.isArray(carData.images)) {
-        setImages(carData.images.map((image: { url: string }) => image.url));
-      } else {
-        setImages([]); // Fallback if images is not an array
-      }
-  
-      setTags(carData.tags.map((tag: { name: string }) => tag.name));
-      setTitle(carData.title);
-      setDescription(carData.description);
-  
-    } catch (error) {
-      console.error("Error fetching car details:", error);
-    }
-  }, [id, baseURL]);
-  
-  
+  const [check1, setCheck1] = useState(false);  
 
   useEffect(() => {
+    const fetchCarDetails = async () => {
+      setLoading(true);
+      setCheck1(true);
+      try {
+        const { data } = await axios.get(`${baseURL}/api/car/${id}`);
+        const { car: carData } = data;
+        console.log("Fetched car data:", carData);
+
+        setCar(carData);
+        if (Array.isArray(carData.images)) {
+          setImages(carData.images.map((image: { url: string }) => image.url));
+        } else {
+          setImages([]); // Fallback if images is not an array
+        }
+
+        setTags(carData.tags.map((tag: { name: string }) => tag.name));
+        setTitle(carData.title);
+        setDescription(carData.description);
+        setCheck1(false);  // Mark the car details as loaded
+      } catch (error) {
+        console.error("Error fetching car details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCarDetails();
-  }, [fetchCarDetails]);
+  }, [baseURL, id, setCheck1]);
 
   const handleUpdate = async () => {
     if (!title.trim() || !description.trim()) {
@@ -105,19 +108,31 @@ export default function CarDescription({
         console.error("Upload failed:", error);
       }
     }
-  
+
     // Debugging log
     console.log("Uploaded images:", uploadedImages);
-  
-    setImages((prev) => {
-      console.log("Previous images state:", prev); // Debugging log
-      return [...(prev || []), ...uploadedImages];
-    });
+
+    setImages([...images, ...uploadedImages]);
   };
-  
 
   return (
     <div className="lg:w-2/5 md:w-3/5 w-[90%] md:border-l-2 border-white/10 md:border-r-2 px-4 h-full">
+      {/* Loader Display */}
+      {loading && check1 && (
+        <div className="z-20 absolute top-0 left-0 w-screen h-screen bg-black/70 backdrop-blur flex flex-col items-center justify-center">
+          <div
+            className="z-20 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+            role="status"
+          >
+            <span
+              className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+            >
+              Loading...
+            </span>
+          </div>
+        </div>
+      )}
+
       <div>
         <button
           onClick={() => setEditMode(true)}

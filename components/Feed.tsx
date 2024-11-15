@@ -4,9 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Car from "./Car";
 import { SignupType } from "@/types/requests";
 import { getUserDetailsById } from "@/services/userServices";
-import {
-  type FileState,
-} from "@/components/MultiImageDropZone";
+import { type FileState } from "@/components/MultiImageDropZone";
 import { useEdgeStore } from "@/lib/edgestore";
 import axios from "axios";
 import { GetCarType } from "@/types/response";
@@ -14,7 +12,7 @@ import ChangingCarState from "./ChangingeCarState";
 import { useSearchContext } from "./SearchContext";
 
 export default function Feed({ userId }: { userId: number }) {
-  const url = process.env.NEXTAUTH_URL || "";
+  const url = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const [user, setUser] = useState<Omit<SignupType, "password">>();
   const [createCar, setCreateCar] = useState(false);
   const [fileStates, setFileStates] = useState<FileState[]>([]);
@@ -25,6 +23,10 @@ export default function Feed({ userId }: { userId: number }) {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [cars, setCars] = useState<GetCarType[]>([]);
+  const [check1, setCheck1] = useState(false);
+  const [check2, setCheck2] = useState(false);
+  const [check3, setCheck3] = useState(false);
+
 
   const { searchText } = useSearchContext(); // Get the search text from context
 
@@ -39,15 +41,19 @@ export default function Feed({ userId }: { userId: number }) {
 
   useEffect(() => {
     fetchUserDetails();
-  }, [fetchUserDetails]);
+    setCheck1(true);
+  }, [fetchUserDetails, setCheck1]);
 
   useEffect(() => {
     async function fetchAllCars() {
       const res = await axios.get(url + "/api/car");
       setCars(res.data.cars);
+      setCheck2(true);
     }
     fetchAllCars();
-  }, [setCars]);
+  }, [setCars, setCheck2]);
+
+  console.log("checking checks",check1, check2);
 
   const updateFileProgress = useCallback(
     (key: string, progress: FileState["progress"]) => {
@@ -64,27 +70,20 @@ export default function Feed({ userId }: { userId: number }) {
   );
 
   const handleFileUpload = async (addedFiles: FileState[]) => {
-    setFileStates((prevState) => [...prevState, ...addedFiles]);
-    await Promise.all(
-      addedFiles.map(async (fileState) => {
-        try {
-          const response = await edgestore.publicFiles.upload({
-            file: fileState.file,
-            onProgressChange: async (progress) => {
-              updateFileProgress(fileState.key, progress);
-              if (progress === 100) {
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                updateFileProgress(fileState.key, "COMPLETE");
-              }
-            },
-          });
-          setImages((prevImages) => [...prevImages, response.url]);
-        } catch (error) {
-          console.error("Upload failed:", error);
-          updateFileProgress(fileState.key, "ERROR");
-        }
-      })
-    );
+    const uploadedImages: string[] = [];
+    for (const fileState of addedFiles) {
+      try {
+        const response = await edgestore.publicFiles.upload({
+          file: fileState.file,
+        });
+        uploadedImages.push(response.url);
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
+    }
+    console.log("Uploaded images:", uploadedImages);
+
+    setImages([...images, ...uploadedImages]);
   };
 
   const handleSubmit = async () => {
@@ -109,7 +108,9 @@ export default function Feed({ userId }: { userId: number }) {
   const filteredCars = cars.filter((car) => {
     const carTitle = car.title.toLowerCase();
     const carDescription = car.description.toLowerCase();
-    const carTags = car.tags.map((tag) => {return tag.name.toLowerCase()});
+    const carTags = car.tags.map((tag) => {
+      return tag.name.toLowerCase();
+    });
     const lowerSearchText = searchText.toLowerCase();
 
     return (
@@ -140,21 +141,38 @@ export default function Feed({ userId }: { userId: number }) {
           handleSubmit={handleSubmit}
         />
       )}
-      <div className="w-full px-4">
-        {filteredCars.map((c, index) => {
-          return (
-            <Car
-              key={index}
-              id={c.id}
-              description={c.description}
-              title={c.title}
-              user={c.user}
-              tags={c.tags}
-              images={c.images}
-            />
-          );
-        })}
+
+      {/* Loader Display */}
+      {!check1 || !check2 && (
+        <div className="z-20 absolute top-0 left-0 w-screen h-screen bg-black/70 backdrop-blur flex flex-col items-center justify-center">
+          <div
+        className="z-20 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+        role="status">
+        <span
+          className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
+        >Loading...</span>
       </div>
+        </div>
+      )}
+
+      {/* Cars List */}
+      {check1 && check2 && (
+        <div className="w-full px-4">
+          {filteredCars.map((c, index) => {
+            return (
+              <Car
+                key={index}
+                id={c.id}
+                description={c.description}
+                title={c.title}
+                user={c.user}
+                tags={c.tags}
+                images={c.images}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -54,7 +54,7 @@ export default function ChangingCarState({
         <Cross />
       </div>
       <div className="flex md:w-3/5 w-4/5 bg-white/10 rounded-xl pb-10 flex-col items-center">
-        <div className="text-4xl font-bold pt-5">Edit Car</div>
+        <div className="text-4xl font-bold pt-5">{title?"Edit Car":"Create Car"}</div>
         <div className="w-full px-10 flex flex-col items-center">
           <FormInput
             label="Car Title"

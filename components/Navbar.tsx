@@ -10,12 +10,14 @@ import { getUserDetailsById } from "@/services/userServices";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useSearchContext } from "./SearchContext";
+import { usePathname } from "next/navigation"; // Use this for pathname
 
 export default function NavBar({ userId }: { userId: number }) {
   const [open, setOpen] = useState(false);
   const [displayLogout, setDisplayLogOut] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string }>();
   const { searchText, setSearchText } = useSearchContext(); // access context
+  const pathname = usePathname(); // Get the current path using usePathname()
   const router = useRouter();
 
   useEffect(() => {
@@ -37,8 +39,12 @@ export default function NavBar({ userId }: { userId: number }) {
     }
   };
 
+  // Disable navbar functionality if the path is /car/:id
+  const isCarPage = pathname?.startsWith("/car/");
+  const isHomePage = pathname === "/home";
+
   return (
-    <div className="w-screen border-b border-white/20">
+    <div className={`w-screen border-b border-white/20 ${isCarPage ? "pointer-events-none" : ""}`}>
       <div className="w-full flex flex-row justify-between items-center px-5 py-4">
         {/* Logo */}
         <div>
@@ -54,14 +60,16 @@ export default function NavBar({ userId }: { userId: number }) {
         </div>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex w-3/5 items-center justify-between">
+        <div className={`hidden md:flex w-3/5 items-center justify-between ${isCarPage ? "pointer-events-none" : ""}`}>
           {/* Search Section */}
-          <div className="flex flex-row items-center">
-            <SearchInput setSearchText={setSearchText} searchText={searchText} />
-            <div className="ml-2">
-              <Button type="search-button" handler={() => {}} />
+          {isHomePage ? (
+            <div className="flex flex-row items-center">
+              <SearchInput setSearchText={setSearchText} searchText={searchText} />
+              <div className="ml-2">
+                <Button type="search-button" handler={() => {}} />
+              </div>
             </div>
-          </div>
+          ):<div></div>}
 
           {/* Login/Signup Section */}
           <div className="flex flex-row items-center">
@@ -96,12 +104,14 @@ export default function NavBar({ userId }: { userId: number }) {
         } md:hidden absolute top-0 h-screen right-0 bg-white/10 backdrop-blur flex-col-reverse items-center justify-end pt-12 gap-4 px-5 py-4`}
       >
         {/* Search Section */}
-        <div className="flex flex-row">
-          <SearchInput setSearchText={setSearchText} searchText={searchText} />
-          <div className="ml-2">
-            <Button type="search-button" handler={() => {}} />
+        {isHomePage && (
+          <div className="flex flex-row">
+            <SearchInput setSearchText={setSearchText} searchText={searchText} />
+            <div className="ml-2">
+              <Button type="search-button" handler={() => {}} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Login/Signup Section */}
         <div className="flex col items-center gap-4 w-full">

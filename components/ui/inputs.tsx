@@ -20,7 +20,7 @@ export function FormInput({
     <div className="flex w-full flex-col items-start mt-5 text-sm">
       <div className="text-white/50">{label}</div>
       <input
-        value={value ? value : ""}
+        value={value}
         onChange={(e) => {
           setFunction(e.target.value);
         }}
